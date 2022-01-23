@@ -1,12 +1,3 @@
-# Introduction
-Template repository for python package.
-
-After duplicating this repository, you may rename the default package name, which is `mypkg128`, with your package name wherever it is declared.
-So rename it in:
-* `pyproject.toml`
-* `tests.yaml`
-* `launch.json`
-
 # Development setup
 ## Prerequisites
 This following packages must be installed
@@ -51,11 +42,11 @@ poetry publish -r testpypi
 
 ## Installation with pip
 ```shell
-pip install --index-url https://test.pypi.org/simple/ mypkg128
+pip install --index-url https://test.pypi.org/simple/ hn-eda
 ```
 or
 ```shell
-pip3 install --index-url https://test.pypi.org/simple/ mypkg128
+pip3 install --index-url https://test.pypi.org/simple/ hn-eda
 ```
 
 # Code of Conduct

@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}/mypkg128"
+      "cwd": "${workspaceFolder}/hn_eda"
     }
   ]
 }

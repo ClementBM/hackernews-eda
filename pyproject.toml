@@ -1,6 +1,6 @@
 # https://python-poetry.org/docs/pyproject/
 [tool.poetry]
-name = "mypkg128"
+name = "hn-eda"
 version = "0.1.0"
 description = "Basic python repository template"
 authors = ["Clément Brutti-Mairesse <clement.brutti.mairesse@gmail.com>"]
@@ -23,6 +23,12 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
+requests = "^2.27.1"
+pandas = "^1.4.0"
+tqdm = "^4.62.3"
+nltk = "^3.6.7"
+fasttext = "^0.9.2"
+matplotlib = "^3.5.1"
 
 [tool.poetry.dev-dependencies]
 pylint = "*"
@@ -36,10 +42,6 @@ sphinx = "*"
 sphinx-rtd-theme = "*"
 coverage = "*"
 
-# New scripts
-# After installing the mypkg128 package, running mypkg128 will call the main() function from mypkg128/__init__.py.
-# [tool.poetry.scripts]
-# mypkg128 = 'mypkg128:main'
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

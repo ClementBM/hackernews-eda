@@ -1,11 +1,11 @@
 name: Tests
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: workflow_dispatch
+  # push:
+  #   branches:
+  #     - main
+  # pull_request:
+  #   branches:
+  #     - main
 
 jobs:
   tests:
@@ -23,7 +23,7 @@ jobs:
       - name: install dependencies
         run: poetry install
       - name: run tests
-        run: poetry run coverage run --source='mypkg128' -m pytest
+        run: poetry run coverage run --source='hn_eda' -m pytest
       - name: code coverage report
         run: poetry run coverage report
       - name: Build code coverage html files
