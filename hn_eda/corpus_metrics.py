@@ -3,7 +3,6 @@ import string
 from pathlib import Path
 from statistics import mean, median, stdev
 
-import fasttext
 import numpy as np
 from nltk import FreqDist
 from nltk.book import Text
@@ -11,20 +10,8 @@ from nltk.corpus import stopwords, words
 from nltk.stem import WordNetLemmatizer
 
 from nltk.corpus.reader.api import CorpusReader
-from hn_eda.story_corpus import StoryCorpusReader
 
 ROOT = Path(__file__).parent
-
-
-class NlpMetricI:
-    def __init__(self):
-        pass
-
-    def value(self):
-        pass
-
-    def formula(self):
-        pass
 
 
 class CorpusMetrics:
@@ -154,58 +141,21 @@ class CorpusMetrics:
     def uppercase_item_proportion(self):
         return len(self.uppercase_items) / self.unique_item_count()
 
-    def english_item_proportion(self):
-        unique_sentences = [
-            " ".join(sentence) for sentence in self.unique_sentences_tokens
-        ]
-
-        are_english_items = self.is_english(unique_sentences)
-        self.non_english_sentences = np.array(unique_sentences)[
-            np.logical_not(are_english_items)
-        ]
-        return are_english_items.sum() / self.unique_item_count()
-
-    def is_english(self, texts: list):
-        path_to_pretrained_model = ROOT / "data" / "lid.176.ftz"
-        fmodel = fasttext.load_model(str(path_to_pretrained_model))
-        return np.array(sum(fmodel.predict(texts)[0], [])) == "__label__en"
-
-    def metric_names(self):
-        return [
-            "duplicate proportion",
-            "count",
-            "unique count",
-            "dictionary length",
-            "lem dictionary length",
-            "in vocabulary",
-            "out of vocabulary",
-            "lexical diversity",
-            "hapaxes",
-            "uppercase items",
-            "numerical proportion",
-            "average length",
-            "std length",
-            "median length",
-            "min max length",
-            "english proportion",
-        ]
-
     def values(self):
         return [
-            round(self.duplicate_proportion(), 4),
-            self.item_count(),
-            self.unique_item_count(),
-            self.dictionary_length(),
-            self.lem_dictionary_length(),
-            round(self.in_vocabulary_proportion(), 4),
-            round(self.out_of_vocabulary_proportion(), 4),
-            round(self.lexical_diversity(), 4),
-            round(self.hapaxes_proportion(), 4),
-            round(self.uppercase_item_proportion(), 4),
-            round(self.numerical_proportion(), 4),
-            round(self.average_item_length(), 2),
-            round(self.std_item_length(), 2),
-            round(self.median_item_length(), 2),
-            self.extremum_item_length(),
-            round(self.english_item_proportion(), 4),
+            ("duplicate proportion", round(self.duplicate_proportion(), 4)),
+            ("count", self.item_count()),
+            ("unique count", self.unique_item_count()),
+            ("dictionary length", self.dictionary_length()),
+            ("lem dictionary length", self.lem_dictionary_length()),
+            ("in vocabulary", round(self.in_vocabulary_proportion(), 4)),
+            ("out of vocabulary", round(self.out_of_vocabulary_proportion(), 4)),
+            ("lexical diversity", round(self.lexical_diversity(), 4)),
+            ("hapaxes", round(self.hapaxes_proportion(), 4)),
+            ("uppercase items", round(self.uppercase_item_proportion(), 4)),
+            ("numerical proportion", round(self.numerical_proportion(), 4)),
+            ("average length", round(self.average_item_length(), 2)),
+            ("std length", round(self.std_item_length(), 2)),
+            ("median length", round(self.median_item_length(), 2)),
+            ("min max length", self.extremum_item_length()),
         ]

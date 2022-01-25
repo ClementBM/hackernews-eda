@@ -12,9 +12,13 @@ def main():
     story_corpus = StoryCorpusReader()
     corpus_metric = CorpusMetrics(corpus=story_corpus)
 
+    corpus_metric.out_of_vocab_tokens
+
+    metric_values = {name: value for name, value in corpus_metric.values()}
+
     readme_df = pd.DataFrame(
-        data=[corpus_metric.values()],
-        columns=corpus_metric.metric_names(),
+        data=[metric_values.values()],
+        columns=metric_values.keys(),
         index=["title"],
     )
     readme_df.transpose()
