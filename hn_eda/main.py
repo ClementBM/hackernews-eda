@@ -12,8 +12,6 @@ def main():
     story_corpus = StoryCorpusReader()
     corpus_metric = CorpusMetrics(corpus=story_corpus)
 
-    corpus_metric.out_of_vocab_tokens
-
     metric_values = {name: value for name, value in corpus_metric.values()}
 
     readme_df = pd.DataFrame(
@@ -23,12 +21,15 @@ def main():
     )
     readme_df.transpose()
 
+    len(corpus_metric.out_of_vocab_tokens)
+    len(corpus_metric.numerical_tokens)
+
     corpus_metric.frequency_distribution.most_common(20)
 
     corpus_metric.story_text.collocations()
     corpus_metric.story_text.collocations(window_size=3)  # does not work ?
 
-    corpus_metric.story_text.concordance("language")
+    corpus_metric.story_text.concordance("pfizer")
 
     corpus_metric.story_text.dispersion_plot(
         [

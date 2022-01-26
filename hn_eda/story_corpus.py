@@ -1,6 +1,3 @@
-import typing
-from pathlib import Path
-
 import re
 from nltk.corpus.reader.api import CorpusReader
 from nltk.corpus.reader.util import StreamBackedCorpusView
