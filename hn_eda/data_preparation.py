@@ -13,14 +13,16 @@ def save_topstories_as_zip():
     hn_topstories_url = (
         "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
     )
-    hn_get_item_url = "https://hacker-news.firebaseio.com/v0/item/{}.json?print=pretty"
+    hn_get_item_url = (
+        "https://hacker-news.firebaseio.com/v0/item/{item_id}.json?print=pretty"
+    )
 
     topstory_result = requests.get(hn_topstories_url)
     topstory_ids = json.loads(topstory_result.text)
 
     data = list()
     for topstory_id in tqdm(topstory_ids):
-        result = requests.get(hn_get_item_url.format(topstory_id))
+        result = requests.get(hn_get_item_url.format(item_id=topstory_id))
         data.append(json.loads(result.text))
 
     data_df = pd.json_normalize(data)
