@@ -3,6 +3,8 @@ import pandas as pd
 from hn_eda.corpus_metrics import CorpusMetrics
 from hn_eda.data_preparation import load_topstories_from_zip
 from hn_eda.story_corpus import StoryCorpusReader
+from wordcloud import WordCloud
+from matplotlib import pyplot as plt
 
 
 def main():
@@ -27,10 +29,14 @@ def main():
     corpus_metric.frequency_distribution.most_common(20)
 
     corpus_metric.story_text.collocations()
-    corpus_metric.story_text.collocations(window_size=3)  # does not work ?
+
+    # When window_size > 2, count non-contiguous bigrams, in the
+    # style of Church and Hanks's (1990) association ratio.
+    corpus_metric.story_text.collocations(window_size=3)
 
     corpus_metric.story_text.concordance("pfizer")
 
+    plt.figure(figsize=(18, 12))
     corpus_metric.story_text.dispersion_plot(
         [
             "Google",
@@ -41,7 +47,41 @@ def main():
         ]
     )
 
+    plt.figure(figsize=(18, 12))
+    corpus_metric.story_text.dispersion_plot(
+        [
+            "Rust",
+            "Python",
+            "JavaScript",
+            "C",
+        ]
+    )
+
+    plt.figure(figsize=(18, 12))
     corpus_metric.frequency_distribution.plot(20, cumulative=True)
 
     # Access the plaintext; outputs pure string/basestring.
-    corpus_metric.items
+    story_corpus.items()
+
+    plot_word_cloud(corpus_metric)
+
+
+def plot_word_cloud(corpus_metric: CorpusMetrics):
+    # generating the wordcloud
+    wordcloud = (
+        WordCloud(
+            background_color="black",
+            max_words=150,
+            include_numbers=False,
+        )
+        .generate_from_frequencies(corpus_metric.frequency_distribution)
+        .recolor(random_state=1)
+    )
+
+    # plot the wordcloud
+    plt.figure(figsize=(20, 20))
+    plt.imshow(wordcloud)
+
+    # to remove the axis value
+    plt.axis("off")
+    plt.show()

@@ -28,6 +28,7 @@ pandas = "^1.4.0"
 tqdm = "^4.62.3"
 nltk = "^3.6.7"
 matplotlib = "^3.5.1"
+wordcloud = "^1.8.1"
 
 [tool.poetry.dev-dependencies]
 pylint = "*"

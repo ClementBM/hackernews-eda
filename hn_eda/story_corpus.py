@@ -11,6 +11,7 @@ class StoryCorpusReader(CorpusReader):
     """
     The corpus view class used by this reader.
     """
+    _items = None
 
     def __init__(self, word_tokenizer=StoryTokenizer(), encoding="utf8"):
         """
@@ -37,6 +38,11 @@ class StoryCorpusReader(CorpusReader):
         """
         return load_topstories_from_zip()
 
+    def items(self):
+        if self._items == None:
+            self._items = self.titles()
+        return self._items
+
     def titles(self):
         """
         Returns only the titles content of Stories
@@ -44,50 +50,56 @@ class StoryCorpusReader(CorpusReader):
         stories = self.docs()
         return stories["title"].tolist()
 
-    def uppercase(self, items: list):
+    def uppercase(self):
         regex_pattern = r"^[^a-z]*$"
-        return [title for title in items if re.match(regex_pattern, title) is not None]
+        return [
+            title
+            for title in self.items()
+            if re.match(regex_pattern, title) is not None
+        ]
 
-    def uppercase_sentences(self, items: list):
+    def uppercase_sentences(
+        self,
+    ):
         tokenizer = self._word_tokenizer
-        return [tuple(tokenizer.tokenize(t)) for t in self.uppercase(items)]
+        return [tuple(tokenizer.tokenize(t)) for t in self.uppercase()]
 
-    def unique_uppercase_sentences(self, items: list):
-        return set(self.uppercase_sentences(items))
+    def unique_uppercase_sentences(self):
+        return set(self.uppercase_sentences())
 
-    def sentences(self, items):
+    def sentences(self):
         """
         :return: a list of the text content of Stories as
             as a list of words.. and punctuation symbols.
         :rtype: list(list(str))
         """
         tokenizer = self._word_tokenizer
-        return [tuple(tokenizer.tokenize(t)) for t in items]
+        return [tuple(tokenizer.tokenize(t)) for t in self.items()]
 
-    def unique_sentences(self, items: list):
+    def unique_sentences(self):
         """
         :return: a list of the text content of Stories as
             as a list of words.. and punctuation symbols.
         :rtype: list(list(str))
         """
-        return set(self.sentences(items))
+        return set(self.sentences())
 
-    def words(self, items: list):
+    def words(self):
         """
         :return: a list of the tokens of Stories.
         :rtype: list(str)
         """
         tokens = []
-        for title_sentence in self.sentences(items):
+        for title_sentence in self.sentences():
             tokens += title_sentence
         return tokens
 
-    def unique_words(self, items: list):
+    def unique_words(self):
         """
         :return: a list of the tokens of Stories.
         :rtype: list(str)
         """
         tokens = []
-        for title_sentence in self.unique_sentences(items):
+        for title_sentence in self.unique_sentences():
             tokens += title_sentence
         return tokens

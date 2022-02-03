@@ -15,15 +15,14 @@ ROOT = Path(__file__).parent
 class CorpusMetrics:
     def __init__(self, corpus: CorpusReader):
         self.story_corpus = corpus
-        self.items = self.story_corpus.titles()
 
-        self.story_text = Text(corpus.unique_words(self.items))
-        self.sentences_tokens = corpus.sentences(self.items)
-        self.unique_sentences_tokens = corpus.unique_sentences(self.items)
+        self.story_text = Text(corpus.unique_words())
+        self.sentences_tokens = corpus.sentences()
+        self.unique_sentences_tokens = corpus.unique_sentences()
         self.sentence_lengths = [
             len(sentence_tokens) for sentence_tokens in self.unique_sentences_tokens
         ]
-        self.uppercase_items = corpus.unique_uppercase_sentences(self.items)
+        self.uppercase_items = corpus.unique_uppercase_sentences()
 
         self._compute_dictionary()
         self._lemmatize_dictionary()
@@ -75,7 +74,7 @@ class CorpusMetrics:
         return (self.item_count() - self.unique_item_count()) / self.item_count()
 
     def item_count(self):
-        return len(self.items)
+        return len(self.story_corpus.items())
 
     def unique_item_count(self):
         return len(self.unique_sentences_tokens)

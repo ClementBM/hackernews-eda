@@ -39,11 +39,6 @@ class StoryTokenizer(TokenizerI):
     # which are the core tokenizing regexes.
     _WORD_RE = None
 
-    def __init__(self):
-        """
-        Create a `StoryTokenizer` instance with settings for use in the `tokenize` method.
-        """
-
     def tokenize(self, text: str) -> typing.List[str]:
         """Tokenize the input text.
 
