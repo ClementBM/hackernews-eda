@@ -30,11 +30,27 @@ def main():
 
     corpus_metric.story_text.collocations()
 
+    corpus_metric.story_text.generate(length=10)
+    corpus_metric.story_text.plot(30)
+
+    corpus_metric.story_text[3:5]
+
+    corpus_metric.story_text.findall("<.*><.*><Google>")
+
+    corpus_metric.story_text.index(word="Google")
+
+    # ?
+    corpus_metric.story_text.common_contexts(words="oo")
+    # ?
+    corpus_metric.story_text.similar("Google")
+
+    corpus_metric.story_text.vocab()["Google"]
+
     # When window_size > 2, count non-contiguous bigrams, in the
     # style of Church and Hanks's (1990) association ratio.
     corpus_metric.story_text.collocations(window_size=3)
 
-    corpus_metric.story_text.concordance("pfizer")
+    corpus_metric.story_text.concordance("language")
 
     plt.figure(figsize=(18, 12))
     corpus_metric.story_text.dispersion_plot(

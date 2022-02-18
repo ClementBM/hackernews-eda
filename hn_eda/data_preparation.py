@@ -29,9 +29,27 @@ def save_topstories_as_zip():
     data_df.to_pickle(TOPSTORIES_PATH)
 
 
+def save_to_json(file_path: Path):
+    standard_df = pd.read_pickle(file_path)
+    shuffled_df = standard_df.sample(frac=1, random_state=42).reset_index(drop=True)
+    _save_df_as_json(shuffled_df, file_path.parent / "hn_topstories.json")
+
+
+def _save_df_as_json(df, file_path: Path):
+    if file_path.exists():
+        file_path.unlink()
+
+    with open(file_path, "ab") as json_file:
+        df.apply(
+            lambda x: json_file.write(f"{x.to_json()}\n".encode("utf-8")),
+            axis=1,
+        )
+
+
 def load_topstories_from_zip():
     return pd.read_pickle(TOPSTORIES_PATH)
 
 
 if __name__ == "__main__":
     save_topstories_as_zip()
+    save_to_json(TOPSTORIES_PATH)
