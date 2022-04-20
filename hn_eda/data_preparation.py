@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 ROOT = Path(__file__)
 TOPSTORIES_PATH = ROOT.parent / "hn_topstories.zip"
-
+TOPSTORIES_JSONL = ROOT.parent / "hn_topstories.jsonl"
 
 def save_topstories_as_zip():
     hn_topstories_url = (
@@ -32,10 +32,10 @@ def save_topstories_as_zip():
 def save_to_json(file_path: Path):
     standard_df = pd.read_pickle(file_path)
     shuffled_df = standard_df.sample(frac=1, random_state=42).reset_index(drop=True)
-    _save_df_as_json(shuffled_df, file_path.parent / "hn_topstories.json")
+    _save_df_as_jsonl(shuffled_df, file_path.parent / "hn_topstories.jsonl")
 
 
-def _save_df_as_json(df, file_path: Path):
+def _save_df_as_jsonl(df, file_path: Path):
     if file_path.exists():
         file_path.unlink()
 

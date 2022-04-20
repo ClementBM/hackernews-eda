@@ -3,7 +3,7 @@ import pandas as pd
 
 from hn_eda.corpus_metrics import CorpusMetrics
 from hn_eda.data_preparation import load_topstories_from_zip
-from hn_eda.story_corpus import StoryCorpusReader
+from hn_eda.story_corpus_2 import StoryCorpusReader
 from wordcloud import WordCloud
 from matplotlib import pyplot as plt
 

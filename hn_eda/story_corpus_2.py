@@ -2,7 +2,7 @@ import re
 from nltk.corpus.reader.api import CorpusReader
 from nltk.corpus.reader.util import StreamBackedCorpusView, concat
 
-from hn_eda.data_preparation import TOPSTORIES_PATH
+from hn_eda.data_preparation import TOPSTORIES_JSONL
 from hn_eda.tokenizers import StoryTokenizer
 import json
 
@@ -22,11 +22,11 @@ class StoryCorpusReader(CorpusReader):
         """
 
         CorpusReader.__init__(
-            self, str(TOPSTORIES_PATH.parent), [TOPSTORIES_PATH.name], encoding
+            self, str(TOPSTORIES_JSONL.parent), [TOPSTORIES_JSONL.name], encoding
         )
 
-        if TOPSTORIES_PATH.stat().st_size == 0:
-            raise ValueError(f"File {TOPSTORIES_PATH} is empty")
+        if TOPSTORIES_JSONL.stat().st_size == 0:
+            raise ValueError(f"File {TOPSTORIES_JSONL} is empty")
         """Check that all user-created corpus files are non-empty."""
 
         self._word_tokenizer = word_tokenizer
