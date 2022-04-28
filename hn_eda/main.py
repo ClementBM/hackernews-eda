@@ -3,7 +3,7 @@ import pandas as pd
 
 from hn_eda.corpus_metrics import CorpusMetrics
 from hn_eda.data_preparation import load_topstories_from_zip
-from hn_eda.story_corpus_2 import StoryCorpusReader
+from hn_eda.story_corpus import StoryCorpusReader
 from wordcloud import WordCloud
 from matplotlib import pyplot as plt
 
@@ -18,12 +18,14 @@ def main():
     story_corpus = StoryCorpusReader()
     corpus_metric = CorpusMetrics(corpus=story_corpus)
 
-    metric_values = {name: value for name, value in corpus_metric.values()}
+    metric_names = [name for name, formula, value in corpus_metric.values()]
+    metric_formulas = [formula for name, formula, value in corpus_metric.values()]
+    metric_values = [value for name, formula, value in corpus_metric.values()]
 
     readme_df = pd.DataFrame(
-        data=[metric_values.values()],
-        columns=metric_values.keys(),
-        index=["title"],
+        data=[metric_formulas, metric_values],
+        columns=metric_names,
+        index=["formula", "title"],
     )
     readme_df.transpose().to_markdown(GENERATED_DIR / "readme.md")
 

@@ -120,20 +120,64 @@ class CorpusMetrics:
 
     def values(self):
         return [
-            ("duplicate proportion", round(self.duplicate_proportion(), 4)),
-            ("count", self.item_count()),
-            ("unique count", self.unique_item_count()),
-            ("dictionary length", self.dictionary_length()),
-            ("lem dictionary length", self.normalized_dictionary_length()),
-            ("in vocabulary", round(self.in_vocabulary_proportion(), 4)),
-            ("out of vocabulary", round(self.out_of_vocabulary_proportion(), 4)),
-            ("numerical proportion", round(self.numerical_proportion(), 4)),
-            ("numerical freqency", round(self.numerical_frequency(), 4)),
-            ("lexical diversity", round(self.lexical_diversity(), 4)),
-            ("hapaxes", round(self.hapaxes_proportion(), 4)),
-            ("uppercase items", round(self.uppercase_item_proportion(), 4)),
-            ("average length", round(self.average_item_length(), 2)),
-            ("std length", round(self.std_item_length(), 2)),
-            ("median length", round(self.median_item_length(), 2)),
-            ("min max length", self.extremum_item_length()),
+            (
+                "duplicate proportion",
+                "$ \\vert \mathcal{C} \\vert - \\vert \mathcal{C}_{unique} \\vert \over \\vert \mathcal{C} \\vert $",
+                round(self.duplicate_proportion(), 4),
+            ),
+            ("count", "$ \\vert \mathcal{C} \\vert $", self.item_count()),
+            (
+                "unique count",
+                "$ \\vert \mathcal{C}_{unique} \\vert $",
+                self.unique_item_count(),
+            ),
+            (
+                "dictionary length",
+                "$\\vert \mathcal{D} \\vert$",
+                self.dictionary_length(),
+            ),
+            (
+                "lem dictionary length",
+                "$\\vert \mathcal{D}_{lemme} \\vert$",
+                self.normalized_dictionary_length(),
+            ),
+            (
+                "in vocabulary",
+                "$\\vert \mathcal{D}_{lemme} \cap \mathcal{D}_{NLTK} \\vert \over \\vert \mathcal{D}_{lemme} \\vert$",
+                round(self.in_vocabulary_proportion(), 4),
+            ),
+            (
+                "out of vocabulary",
+                "$\\vert \mathcal{D}_{lemme} \\vert - \\vert \mathcal{D}_{lemme} \cap \mathcal{D}_{NLTK} \\vert \over \\vert \mathcal{D}_{lemme} \\vert$",
+                round(self.out_of_vocabulary_proportion(), 4),
+            ),
+            (
+                "numerical proportion",
+                "$d_{numerical} \over d$",
+                round(self.numerical_proportion(), 4),
+            ),
+            (
+                "numerical frequency",
+                "$d_{numerical} \over d$",
+                round(self.numerical_frequency(), 4),
+            ),
+            (
+                "lexical diversity",
+                "$\\vert \mathcal{D} \\vert \over \\vert \mathcal{T} \\vert$",
+                round(self.lexical_diversity(), 4),
+            ),
+            (
+                "hapaxes",
+                "$\\vert \mathcal{D}_{hapax} \\vert \over \\vert \mathcal{D} \\vert$",
+                round(self.hapaxes_proportion(), 4),
+            ),
+            (
+                "uppercase items",
+                "$n_{upper} \over n_{unique}$",
+                round(self.uppercase_item_proportion(), 4),
+            ),
+            ("average length", "$\\bar{n}$", round(self.average_item_length(), 2)),
+            ("std length", "$s_{n}$", round(self.std_item_length(), 2)),
+            ("median length", "$\\tilde{n}$", round(self.median_item_length(), 2)),
+            ("min max length", "$min(n), max(n)$", self.extremum_item_length()),
         ]

@@ -6,8 +6,11 @@ import requests
 from tqdm import tqdm
 
 ROOT = Path(__file__)
-TOPSTORIES_PATH = ROOT.parent / "hn_topstories.zip"
-TOPSTORIES_JSONL = ROOT.parent / "hn_topstories.jsonl"
+
+TOPSTORIES_NAME = "hn_topstories"
+TOPSTORIES_ZIP = ROOT.parent / f"{TOPSTORIES_NAME}.zip"
+TOPSTORIES_JSONL = TOPSTORIES_ZIP / f"{TOPSTORIES_NAME}.jsonl"
+
 
 def save_topstories_as_zip():
     hn_topstories_url = (
@@ -26,13 +29,13 @@ def save_topstories_as_zip():
         data.append(json.loads(result.text))
 
     data_df = pd.json_normalize(data)
-    data_df.to_pickle(TOPSTORIES_PATH)
+    data_df.to_pickle(TOPSTORIES_ZIP)
 
 
 def save_to_json(file_path: Path):
     standard_df = pd.read_pickle(file_path)
     shuffled_df = standard_df.sample(frac=1, random_state=42).reset_index(drop=True)
-    _save_df_as_jsonl(shuffled_df, file_path.parent / "hn_topstories.jsonl")
+    _save_df_as_jsonl(shuffled_df, file_path.parent / f"{TOPSTORIES_NAME}.jsonl")
 
 
 def _save_df_as_jsonl(df, file_path: Path):
@@ -47,9 +50,13 @@ def _save_df_as_jsonl(df, file_path: Path):
 
 
 def load_topstories_from_zip():
-    return pd.read_pickle(TOPSTORIES_PATH)
+    return pd.read_json(
+        TOPSTORIES_ZIP,
+        lines=True,
+        compression="zip",
+    )
 
 
 if __name__ == "__main__":
     save_topstories_as_zip()
-    save_to_json(TOPSTORIES_PATH)
+    save_to_json(TOPSTORIES_ZIP)
