@@ -9,7 +9,7 @@ import os
 
 
 class StoryCorpusReader(CorpusReader):
-    CorpusView = StreamBackedCorpusView
+    corpus_view = StreamBackedCorpusView
     """
     The corpus view class used by this reader.
     """
@@ -42,7 +42,7 @@ class StoryCorpusReader(CorpusReader):
         """
         return concat(
             [
-                self.CorpusView(path, self._read_stories, encoding=enc)
+                self.corpus_view(path, self._read_stories, encoding=enc)
                 for (path, enc, fileid) in self.abspaths(fileids, True, True)
             ]
         )
