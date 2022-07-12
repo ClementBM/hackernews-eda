@@ -16,7 +16,7 @@ class CorpusMetrics:
     def __init__(self, corpus: CorpusReader):
         self.story_corpus = corpus
 
-        self.story_text = Text(corpus.unique_words())
+        self.story_text = Text(corpus.sentence_tokens())
         self.sentences_tokens = corpus.sentences()
         self.unique_sentences_tokens = corpus.unique_sentences()
         self.sentence_lengths = [

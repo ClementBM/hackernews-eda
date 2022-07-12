@@ -110,7 +110,7 @@ class StoryCorpusReader(CorpusReader):
             tokens += title_sentence
         return tokens
 
-    def unique_words(self):
+    def sentences_tokens(self):
         """
         :return: a list of the tokens of Stories.
         :rtype: list(str)
