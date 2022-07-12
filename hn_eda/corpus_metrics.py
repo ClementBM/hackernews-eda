@@ -7,40 +7,84 @@ from nltk.book import Text
 from nltk.corpus import stopwords, words
 from nltk.stem import WordNetLemmatizer
 
-from nltk.corpus.reader.api import CorpusReader
+from nltk.corpus.reader.api import CorpusReaderBase
 
 ROOT = Path(__file__).parent
+from functools import wraps
+
+
+def corpus_metric(name, formula, decimal_round=0):
+    def decorate(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            fn.is_metric = True
+            fn.name = name
+            fn.formula = formula
+            fn.decimal_round = decimal_round
+            return fn
+
+        return wrapper
+
+    return decorate
 
 
 class CorpusMetrics:
-    def __init__(self, corpus: CorpusReader):
-        self.story_corpus = corpus
+    def __init__(self, corpus: CorpusReaderBase):
+        self.corpus = corpus
 
-        self.story_text = Text(corpus.sentence_tokens())
-        self.sentences_tokens = corpus.sentences()
-        self.unique_sentences_tokens = corpus.unique_sentences()
-        self.sentence_lengths = [
-            len(sentence_tokens) for sentence_tokens in self.unique_sentences_tokens
-        ]
-        self.uppercase_items = corpus.unique_uppercase_sentences()
-
-        self._compute_dictionary()
         self._lemmatize_dictionary()
         self._compute_oov()
 
-    def _compute_dictionary(self):
-        stop_words = set(stopwords.words("english"))
+    def uppercase_sentences_words(
+        self,
+    ):
+        if self._uppercase_sentences_words == None:
+            tokenizer = self._word_tokenizer
+            self._uppercase_sentences_words = [
+                tuple(tokenizer.tokenize(t)) for t in self.uppercase()
+            ]
+        return self._uppercase_sentences_words
 
-        meaningful_words = [
-            word for word in self.story_text if word.casefold() not in stop_words
+    def unique_sentences(self):
+        """
+        :return: a list of the text content of Stories as
+            as a list of words.. and punctuation symbols.
+        :rtype: list(list(str))
+        """
+        if self._unique_sentences == None:
+            self._unique_sentences = set(self.corpus.sentences())
+        return self._unique_sentences
+
+    def uppercase_sentences(self):
+        if self._uppercase_sentences == None:
+            regex_pattern = r"^[^a-z]*$"
+            self._uppercase_sentences = [
+                title
+                for title in self.unique_sentences()
+                if re.match(regex_pattern, title) is not None
+            ]
+        return self._uppercase_sentences
+
+    def sentence_lengths(self):
+        return [
+            len(sentence_tokens) for sentence_tokens in self.uppercase_sentences_words()
         ]
 
-        self.frequency_distribution = FreqDist(meaningful_words)
+    def dictionary(self):
+        if self._dictionary == None:
+            stop_words = set(stopwords.words("english"))
+
+            meaningful_words = [
+                word for word in self.story_text if word.casefold() not in stop_words
+            ]
+
+            self._dictionary = FreqDist(meaningful_words)
+        return self._dictionary
 
     def _lemmatize_dictionary(self):
         lemmatizer = WordNetLemmatizer()
         self.lemmatized_words = set()
-        for word in self.frequency_distribution.keys():
+        for word in self.dictionary().keys():
             casefold_lemme = lemmatizer.lemmatize(word.casefold(), pos="n")
             if casefold_lemme.casefold() != word.casefold():
                 self.lemmatized_words.add(casefold_lemme)
@@ -64,120 +108,102 @@ class CorpusMetrics:
             else:
                 self.out_of_vocab_tokens.add(token)
 
+    @corpus_metric(
+        name="numerical frequency", formula="$d_{numerical} \over d$", decimal_round=4
+    )
     def numerical_frequency(self):
         numerical_frequencies = [
-            self.frequency_distribution.freq(token) for token in self.numerical_tokens
+            self.dictionary().freq(token) for token in self.numerical_tokens
         ]
         return sum(numerical_frequencies)
 
+    @corpus_metric(
+        name="duplicate proportion",
+        formula="$ \\vert \mathcal{C} \\vert - \\vert \mathcal{C}_{unique} \\vert \over \\vert \mathcal{C} \\vert $",
+        decimal_round=4,
+    )
     def duplicate_proportion(self):
         return (self.item_count() - self.unique_item_count()) / self.item_count()
 
+    @corpus_metric(name="count", formula="$ \\vert \mathcal{C} \\vert $")
     def item_count(self):
-        return len(self.story_corpus.items())
+        return len(self.corpus.items())
 
+    @corpus_metric(
+        name="unique count", formula="$ \\vert \mathcal{C}_{unique} \\vert $"
+    )
     def unique_item_count(self):
         return len(self.unique_sentences_tokens)
 
+    @corpus_metric(name="average length", formula="$\\bar{n}$", decimal_round=2)
     def average_item_length(self):
         return mean(self.sentence_lengths)
 
+    @corpus_metric(name="std length", formula="$s_{n}$", decimal_round=2)
     def std_item_length(self):
         return stdev(self.sentence_lengths)
 
+    @corpus_metric(name="median length", formula="$\\tilde{n}$", decimal_round=2)
     def median_item_length(self):
         return median(self.sentence_lengths)
 
+    @corpus_metric(name="min max length", formula="$min(n), max(n)$")
     def extremum_item_length(self):
         return min(self.sentence_lengths), max(self.sentence_lengths)
 
+    @corpus_metric(
+        name="in vocabulary",
+        formula="$\\vert \mathcal{D}_{lemme} \cap \mathcal{D}_{NLTK} \\vert \over \\vert \mathcal{D}_{lemme} \\vert$",
+        decimal_round=4,
+    )
     def in_vocabulary_proportion(self):
         return len(self.in_vocab_tokens) / self.normalized_dictionary_length()
 
+    @corpus_metric(
+        name="out of vocabulary",
+        formula="$\\vert \mathcal{D}_{lemme} \\vert - \\vert \mathcal{D}_{lemme} \cap \mathcal{D}_{NLTK} \\vert \over \\vert \mathcal{D}_{lemme} \\vert$",
+        decimal_round=4,
+    )
     def out_of_vocabulary_proportion(self):
         return len(self.out_of_vocab_tokens) / self.normalized_dictionary_length()
 
+    @corpus_metric(
+        name="numerical proportion", formula="$d_{numerical} \over d$", decimal_round=4
+    )
     def numerical_proportion(self):
         return len(self.numerical_tokens) / self.normalized_dictionary_length()
 
+    @corpus_metric(
+        name="lexical diversity",
+        formula="$\\vert \mathcal{D} \\vert \over \\vert \mathcal{T} \\vert$",
+        decimal_round=4,
+    )
     def lexical_diversity(self):
-        return self.dictionary_length() / self.frequency_distribution.N()
+        return self.dictionary_length() / self.dictionary().N()
 
+    @corpus_metric(
+        name="hapaxes",
+        formula="$\\vert \mathcal{D}_{hapax} \\vert \over \\vert \mathcal{D} \\vert$",
+        decimal_round=4,
+    )
     def hapaxes_proportion(self):
         """
         Return the proportion of all samples that occur once (hapax legomena)
         """
-        return len(self.frequency_distribution.hapaxes()) / self.dictionary_length()
+        return len(self.dictionary().hapaxes()) / self.dictionary_length()
 
+    @corpus_metric(name="dictionary length", formula="$\\vert \mathcal{D} \\vert$")
     def dictionary_length(self):
-        return len(self.frequency_distribution)
+        return len(self.dictionary())
 
+    @corpus_metric(
+        name="lem dictionary length", formula="$\\vert \mathcal{D}_{lemme} \\vert$"
+    )
     def normalized_dictionary_length(self):
         return len(self.lemmatized_words)
 
+    @corpus_metric(
+        name="uppercase items", formula="$n_{upper} \over n_{unique}$", decimal_round=4
+    )
     def uppercase_item_proportion(self):
         return len(self.uppercase_items) / self.unique_item_count()
-
-    def values(self):
-        return [
-            (
-                "duplicate proportion",
-                "$ \\vert \mathcal{C} \\vert - \\vert \mathcal{C}_{unique} \\vert \over \\vert \mathcal{C} \\vert $",
-                round(self.duplicate_proportion(), 4),
-            ),
-            ("count", "$ \\vert \mathcal{C} \\vert $", self.item_count()),
-            (
-                "unique count",
-                "$ \\vert \mathcal{C}_{unique} \\vert $",
-                self.unique_item_count(),
-            ),
-            (
-                "dictionary length",
-                "$\\vert \mathcal{D} \\vert$",
-                self.dictionary_length(),
-            ),
-            (
-                "lem dictionary length",
-                "$\\vert \mathcal{D}_{lemme} \\vert$",
-                self.normalized_dictionary_length(),
-            ),
-            (
-                "in vocabulary",
-                "$\\vert \mathcal{D}_{lemme} \cap \mathcal{D}_{NLTK} \\vert \over \\vert \mathcal{D}_{lemme} \\vert$",
-                round(self.in_vocabulary_proportion(), 4),
-            ),
-            (
-                "out of vocabulary",
-                "$\\vert \mathcal{D}_{lemme} \\vert - \\vert \mathcal{D}_{lemme} \cap \mathcal{D}_{NLTK} \\vert \over \\vert \mathcal{D}_{lemme} \\vert$",
-                round(self.out_of_vocabulary_proportion(), 4),
-            ),
-            (
-                "numerical proportion",
-                "$d_{numerical} \over d$",
-                round(self.numerical_proportion(), 4),
-            ),
-            (
-                "numerical frequency",
-                "$d_{numerical} \over d$",
-                round(self.numerical_frequency(), 4),
-            ),
-            (
-                "lexical diversity",
-                "$\\vert \mathcal{D} \\vert \over \\vert \mathcal{T} \\vert$",
-                round(self.lexical_diversity(), 4),
-            ),
-            (
-                "hapaxes",
-                "$\\vert \mathcal{D}_{hapax} \\vert \over \\vert \mathcal{D} \\vert$",
-                round(self.hapaxes_proportion(), 4),
-            ),
-            (
-                "uppercase items",
-                "$n_{upper} \over n_{unique}$",
-                round(self.uppercase_item_proportion(), 4),
-            ),
-            ("average length", "$\\bar{n}$", round(self.average_item_length(), 2)),
-            ("std length", "$s_{n}$", round(self.std_item_length(), 2)),
-            ("median length", "$\\tilde{n}$", round(self.median_item_length(), 2)),
-            ("min max length", "$min(n), max(n)$", self.extremum_item_length()),
-        ]

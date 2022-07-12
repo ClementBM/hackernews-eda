@@ -1,4 +1,3 @@
-import re
 from nltk.corpus.reader.api import CorpusReader
 from nltk.corpus.reader.util import StreamBackedCorpusView, concat, ZipFilePathPointer
 
@@ -7,13 +6,29 @@ from hn_eda.tokenizers import StoryTokenizer
 import json
 import os
 
+from abc import abstractmethod
 
-class StoryCorpusReader(CorpusReader):
+
+class CorpusReaderBase(CorpusReader):
+    @abstractmethod
+    def texts(self):
+        pass
+
+    @abstractmethod
+    def sentences(self):
+        pass
+
+    @abstractmethod
+    def words(self):
+        pass
+
+
+class StoryCorpusReader(CorpusReaderBase):
     corpus_view = StreamBackedCorpusView
     """
     The corpus view class used by this reader.
     """
-    _items = None
+    _titles = None
 
     def __init__(self, word_tokenizer=StoryTokenizer(), encoding="utf8"):
         """
@@ -47,41 +62,24 @@ class StoryCorpusReader(CorpusReader):
             ]
         )
 
-    def items(self):
-        if self._items == None:
-            self._items = self.titles()
-        return self._items
-
     def titles(self):
         """
         Returns only the titles content of Stories
         """
-        titles = self.docs()
-        standards_list = []
-        for jsono in titles:
-            text = jsono["title"]
-            if isinstance(text, bytes):
-                text = text.decode(self.encoding)
+        if self._titles == None:
+            titles = self.docs()
+            standard_titles = []
+            for jsono in titles:
+                text = jsono["title"]
+                if isinstance(text, bytes):
+                    text = text.decode(self.encoding)
 
-            standards_list.append(text)
-        return standards_list
+                standard_titles.append(text)
+            self._titles = standard_titles
+        return self._titles
 
-    def uppercase(self):
-        regex_pattern = r"^[^a-z]*$"
-        return [
-            title
-            for title in self.items()
-            if re.match(regex_pattern, title) is not None
-        ]
-
-    def uppercase_sentences(
-        self,
-    ):
-        tokenizer = self._word_tokenizer
-        return [tuple(tokenizer.tokenize(t)) for t in self.uppercase()]
-
-    def unique_uppercase_sentences(self):
-        return set(self.uppercase_sentences())
+    def texts(self):
+        return self.titles()
 
     def sentences(self):
         """
@@ -90,15 +88,7 @@ class StoryCorpusReader(CorpusReader):
         :rtype: list(list(str))
         """
         tokenizer = self._word_tokenizer
-        return [tuple(tokenizer.tokenize(t)) for t in self.items()]
-
-    def unique_sentences(self):
-        """
-        :return: a list of the text content of Stories as
-            as a list of words.. and punctuation symbols.
-        :rtype: list(list(str))
-        """
-        return set(self.sentences())
+        return [tuple(tokenizer.tokenize(t)) for t in self.titles()]
 
     def words(self):
         """
@@ -107,16 +97,6 @@ class StoryCorpusReader(CorpusReader):
         """
         tokens = []
         for title_sentence in self.sentences():
-            tokens += title_sentence
-        return tokens
-
-    def sentences_tokens(self):
-        """
-        :return: a list of the tokens of Stories.
-        :rtype: list(str)
-        """
-        tokens = []
-        for title_sentence in self.unique_sentences():
             tokens += title_sentence
         return tokens
 
