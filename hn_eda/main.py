@@ -18,16 +18,8 @@ def main():
     story_corpus = StoryCorpusReader()
     corpus_metric = CorpusMetrics(corpus=story_corpus)
 
-    metric_names = [name for name, formula, value in corpus_metric.values()]
-    metric_formulas = [formula for name, formula, value in corpus_metric.values()]
-    metric_values = [value for name, formula, value in corpus_metric.values()]
-
-    readme_df = pd.DataFrame(
-        data=[metric_formulas, metric_values],
-        columns=metric_names,
-        index=["formula", "title"],
-    )
-    readme_df.transpose().to_markdown(GENERATED_DIR / "readme.md")
+    metrics_df = corpus_metric.values()
+    metrics_df.to_markdown(GENERATED_DIR / "readme.md")
 
     corpus_metric.frequency_distribution.most_common(20)
 

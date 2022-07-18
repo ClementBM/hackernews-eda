@@ -1,10 +1,6 @@
 from pathlib import Path
-import pandas as pd
 
-from hn_eda.corpus_metrics import CorpusMetrics
-from hn_eda.data_preparation import load_topstories_from_zip
 from hn_eda.story_corpus import StoryCorpusReader
-from wordcloud import WordCloud
 from matplotlib import pyplot as plt
 from nltk.book import Text
 from nltk.corpus import stopwords

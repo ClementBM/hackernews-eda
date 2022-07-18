@@ -1,34 +1,35 @@
 import re
 from pathlib import Path
 from statistics import mean, median, stdev
+import pandas as pd
 
 from nltk import FreqDist
-from nltk.book import Text
 from nltk.corpus import stopwords, words
 from nltk.stem import WordNetLemmatizer
 
-from nltk.corpus.reader.api import CorpusReaderBase
+from hn_eda.story_corpus import CorpusReaderBase
 
 ROOT = Path(__file__).parent
-from functools import wraps
 
 
 def corpus_metric(name, formula, decimal_round=0):
-    def decorate(fn):
-        @wraps(fn)
-        def wrapper(*args, **kwargs):
-            fn.is_metric = True
-            fn.name = name
-            fn.formula = formula
-            fn.decimal_round = decimal_round
-            return fn
+    def decorator(function):
+        function.is_metric = True
+        function.name = name
+        function.formula = formula
+        function.decimal_round = decimal_round
+        return function
 
-        return wrapper
-
-    return decorate
+    return decorator
 
 
 class CorpusMetrics:
+    _unique_sentences = None
+    _dictionary = None
+    _uppercase_sentences_words = None
+    _uppercase_sentences = None
+    _sentence_lengths = None
+
     def __init__(self, corpus: CorpusReaderBase):
         self.corpus = corpus
 
@@ -39,9 +40,9 @@ class CorpusMetrics:
         self,
     ):
         if self._uppercase_sentences_words == None:
-            tokenizer = self._word_tokenizer
+            tokenizer = self.corpus._word_tokenizer
             self._uppercase_sentences_words = [
-                tuple(tokenizer.tokenize(t)) for t in self.uppercase()
+                tuple(tokenizer.tokenize(t)) for t in self.uppercase_sentences()
             ]
         return self._uppercase_sentences_words
 
@@ -52,7 +53,7 @@ class CorpusMetrics:
         :rtype: list(list(str))
         """
         if self._unique_sentences == None:
-            self._unique_sentences = set(self.corpus.sentences())
+            self._unique_sentences = set(self.corpus.titles())
         return self._unique_sentences
 
     def uppercase_sentences(self):
@@ -66,16 +67,20 @@ class CorpusMetrics:
         return self._uppercase_sentences
 
     def sentence_lengths(self):
-        return [
-            len(sentence_tokens) for sentence_tokens in self.uppercase_sentences_words()
-        ]
+        if self._sentence_lengths == None:
+            self._sentence_lengths = [
+                len(sentence_tokens) for sentence_tokens in self.unique_sentences()
+            ]
+        return self._sentence_lengths
 
     def dictionary(self):
         if self._dictionary == None:
             stop_words = set(stopwords.words("english"))
 
             meaningful_words = [
-                word for word in self.story_text if word.casefold() not in stop_words
+                word
+                for word in self.corpus.words()
+                if word.casefold() not in stop_words
             ]
 
             self._dictionary = FreqDist(meaningful_words)
@@ -109,7 +114,9 @@ class CorpusMetrics:
                 self.out_of_vocab_tokens.add(token)
 
     @corpus_metric(
-        name="numerical frequency", formula="$d_{numerical} \over d$", decimal_round=4
+        name="numerical frequency",
+        formula="\\vert \mathcal{T}_{numerical} \\vert \over \\vert \mathcal{T} \\vert",
+        decimal_round=4,
     )
     def numerical_frequency(self):
         numerical_frequencies = [
@@ -118,42 +125,48 @@ class CorpusMetrics:
         return sum(numerical_frequencies)
 
     @corpus_metric(
+        name="numerical proportion",
+        formula="\\vert \mathcal{D}_{numerical} \\vert \over \\vert \mathcal{D}_{lemme} \\vert",
+        decimal_round=4,
+    )
+    def numerical_proportion(self):
+        return len(self.numerical_tokens) / self.normalized_dictionary_length()
+
+    @corpus_metric(
         name="duplicate proportion",
-        formula="$ \\vert \mathcal{C} \\vert - \\vert \mathcal{C}_{unique} \\vert \over \\vert \mathcal{C} \\vert $",
+        formula="\\vert \mathcal{O} \\vert - \\vert \mathcal{O}_{unique} \\vert \over \\vert \mathcal{O} \\vert",
         decimal_round=4,
     )
     def duplicate_proportion(self):
         return (self.item_count() - self.unique_item_count()) / self.item_count()
 
-    @corpus_metric(name="count", formula="$ \\vert \mathcal{C} \\vert $")
+    @corpus_metric(name="count", formula="\\vert \mathcal{O} \\vert")
     def item_count(self):
-        return len(self.corpus.items())
+        return len(self.corpus.sentences())
 
-    @corpus_metric(
-        name="unique count", formula="$ \\vert \mathcal{C}_{unique} \\vert $"
-    )
+    @corpus_metric(name="unique count", formula="\\vert \mathcal{O}_{unique} \\vert")
     def unique_item_count(self):
-        return len(self.unique_sentences_tokens)
+        return len(self.unique_sentences())
 
-    @corpus_metric(name="average length", formula="$\\bar{n}$", decimal_round=2)
+    @corpus_metric(name="average length", formula="\\bar{M_i}", decimal_round=2)
     def average_item_length(self):
-        return mean(self.sentence_lengths)
+        return mean(self.sentence_lengths())
 
-    @corpus_metric(name="std length", formula="$s_{n}$", decimal_round=2)
+    @corpus_metric(name="std length", formula="s_{M_i}", decimal_round=2)
     def std_item_length(self):
-        return stdev(self.sentence_lengths)
+        return stdev(self.sentence_lengths())
 
-    @corpus_metric(name="median length", formula="$\\tilde{n}$", decimal_round=2)
+    @corpus_metric(name="median length", formula="\\tilde{M_i}", decimal_round=2)
     def median_item_length(self):
-        return median(self.sentence_lengths)
+        return median(self.sentence_lengths())
 
-    @corpus_metric(name="min max length", formula="$min(n), max(n)$")
+    @corpus_metric(name="min max length", formula="\{ min(M_i), max(M_i) \}")
     def extremum_item_length(self):
-        return min(self.sentence_lengths), max(self.sentence_lengths)
+        return min(self.sentence_lengths()), max(self.sentence_lengths())
 
     @corpus_metric(
         name="in vocabulary",
-        formula="$\\vert \mathcal{D}_{lemme} \cap \mathcal{D}_{NLTK} \\vert \over \\vert \mathcal{D}_{lemme} \\vert$",
+        formula="\\vert \mathcal{D}_{lemme} \cap \mathcal{D}_{NLTK} \\vert \over \\vert \mathcal{D}_{lemme} \\vert",
         decimal_round=4,
     )
     def in_vocabulary_proportion(self):
@@ -168,22 +181,24 @@ class CorpusMetrics:
         return len(self.out_of_vocab_tokens) / self.normalized_dictionary_length()
 
     @corpus_metric(
-        name="numerical proportion", formula="$d_{numerical} \over d$", decimal_round=4
-    )
-    def numerical_proportion(self):
-        return len(self.numerical_tokens) / self.normalized_dictionary_length()
-
-    @corpus_metric(
         name="lexical diversity",
-        formula="$\\vert \mathcal{D} \\vert \over \\vert \mathcal{T} \\vert$",
+        formula="\\vert \mathcal{D} \\vert \over \\vert \mathcal{T} \\vert",
         decimal_round=4,
     )
     def lexical_diversity(self):
         return self.dictionary_length() / self.dictionary().N()
 
     @corpus_metric(
+        name="token count",
+        formula="\\vert \mathcal{T} \\vert",
+        decimal_round=4,
+    )
+    def token_count(self):
+        return self.dictionary().N()
+
+    @corpus_metric(
         name="hapaxes",
-        formula="$\\vert \mathcal{D}_{hapax} \\vert \over \\vert \mathcal{D} \\vert$",
+        formula="\\vert \mathcal{D}_{hapax} \\vert \over \\vert \mathcal{D} \\vert",
         decimal_round=4,
     )
     def hapaxes_proportion(self):
@@ -192,18 +207,45 @@ class CorpusMetrics:
         """
         return len(self.dictionary().hapaxes()) / self.dictionary_length()
 
-    @corpus_metric(name="dictionary length", formula="$\\vert \mathcal{D} \\vert$")
+    @corpus_metric(name="dictionary length", formula="\\vert \mathcal{D} \\vert")
     def dictionary_length(self):
         return len(self.dictionary())
 
     @corpus_metric(
-        name="lem dictionary length", formula="$\\vert \mathcal{D}_{lemme} \\vert$"
+        name="lem dictionary length", formula="\\vert \mathcal{D}_{lemme} \\vert"
     )
     def normalized_dictionary_length(self):
         return len(self.lemmatized_words)
 
     @corpus_metric(
-        name="uppercase items", formula="$n_{upper} \over n_{unique}$", decimal_round=4
+        name="uppercase items",
+        formula="\\vert \\mathcal{O}_{upper} \\vert \over \\vert \\mathcal{O} \\vert",
+        decimal_round=4,
     )
     def uppercase_item_proportion(self):
-        return len(self.uppercase_items) / self.unique_item_count()
+        return len(self.uppercase_sentences()) / self.unique_item_count()
+
+    def values(self):
+        metrics = [
+            getattr(self, method)
+            for method in dir(self)
+            if hasattr(getattr(self, method), "is_metric")
+        ]
+
+        metric_names = []
+        metric_formulas = []
+        metric_values = []
+        for metric in metrics:
+            metric_names.append(metric.name)
+            metric_formulas.append(f"${metric.formula}$")
+            if metric.decimal_round > 0:
+                metric_values.append(round(metric(), metric.decimal_round))
+            else:
+                metric_values.append(metric())
+
+        readme_df = pd.DataFrame(
+            data=[metric_formulas, metric_values],
+            columns=metric_names,
+            index=["formula", "title"],
+        )
+        return readme_df.transpose()

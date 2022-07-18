@@ -1,18 +1,19 @@
-|                       | formula                                                                                                                           | title   |
-|:----------------------|:----------------------------------------------------------------------------------------------------------------------------------|:--------|
-| duplicate proportion  | $ \vert \mathcal{C} \vert - \vert \mathcal{C}_{unique} \vert \over \vert \mathcal{C} \vert $                                      | 0.006   |
-| count                 | $ \vert \mathcal{C} \vert $                                                                                                       | 500     |
-| unique count          | $ \vert \mathcal{C}_{unique} \vert $                                                                                              | 497     |
-| dictionary length     | $\vert \mathcal{D} \vert$                                                                                                         | 2195    |
-| lem dictionary length | $\vert \mathcal{D}_{lemme} \vert$                                                                                                 | 1817    |
-| in vocabulary         | $\vert \mathcal{D}_{lemme} \cap \mathcal{D}_{NLTK} \vert \over \vert \mathcal{D}_{lemme} \vert$                                   | 0.7386  |
-| out of vocabulary     | $\vert \mathcal{D}_{lemme} \vert - \vert \mathcal{D}_{lemme} \cap \mathcal{D}_{NLTK} \vert \over \vert \mathcal{D}_{lemme} \vert$ | 0.2334  |
-| numerical proportion  | $d_{numerical} \over d$                                                                                                           | 0.0281  |
-| numerical frequency   | $d_{numerical} \over d$                                                                                                           | 0.0317  |
-| lexical diversity     | $\vert \mathcal{D} \vert \over \vert \mathcal{T} \vert$                                                                           | 0.7734  |
-| hapaxes               | $\vert \mathcal{D}_{hapax} \vert \over \vert \mathcal{D} \vert$                                                                   | 0.8415  |
-| uppercase items       | $n_{upper} \over n_{unique}$                                                                                                      | 0.0     |
-| average length        | $\bar{n}$                                                                                                                         | 8.08    |
-| std length            | $s_{n}$                                                                                                                           | 3.37    |
-| median length         | $\tilde{n}$                                                                                                                       | 8       |
-| min max length        | $min(n), max(n)$                                                                                                                  | (1, 16) |
+|                       | formula                                                                                                                             | title   |
+|:----------------------|:------------------------------------------------------------------------------------------------------------------------------------|:--------|
+| average length        | $\bar{M_i}$                                                                                                                         | 49.69   |
+| dictionary length     | $\vert \mathcal{D} \vert$                                                                                                           | 2195    |
+| duplicate proportion  | $\vert \mathcal{O} \vert - \vert \mathcal{O}_{unique} \vert \over \vert \mathcal{O} \vert$                                          | 0.006   |
+| min max length        | $\{ min(M_i), max(M_i) \}$                                                                                                          | (7, 81) |
+| hapaxes               | $\vert \mathcal{D}_{hapax} \vert \over \vert \mathcal{D} \vert$                                                                     | 0.8378  |
+| in vocabulary         | $\vert \mathcal{D}_{lemme} \cap \mathcal{D}_{NLTK} \vert \over \vert \mathcal{D}_{lemme} \vert$                                     | 0.7386  |
+| count                 | $\vert \mathcal{O} \vert$                                                                                                           | 500     |
+| lexical diversity     | $\vert \mathcal{D} \vert \over \vert \mathcal{T} \vert$                                                                             | 0.7694  |
+| median length         | $\tilde{M_i}$                                                                                                                       | 51      |
+| lem dictionary length | $\vert \mathcal{D}_{lemme} \vert$                                                                                                   | 1817    |
+| numerical frequency   | $\vert \mathcal{T}_{numerical} \vert \over \vert \mathcal{T} \vert$                                                                 | 0.0315  |
+| numerical proportion  | $\vert \mathcal{D}_{numerical} \vert \over \vert \mathcal{D}_{lemme} \vert$                                                         | 0.0281  |
+| out of vocabulary     | $$\vert \mathcal{D}_{lemme} \vert - \vert \mathcal{D}_{lemme} \cap \mathcal{D}_{NLTK} \vert \over \vert \mathcal{D}_{lemme} \vert$$ | 0.2334  |
+| std length            | $s_{M_i}$                                                                                                                           | 19.12   |
+| token count           | $\vert \mathcal{T} \vert$                                                                                                           | 2853    |
+| unique count          | $\vert \mathcal{O}_{unique} \vert$                                                                                                  | 497     |
+| uppercase items       | $\vert \mathcal{O}_{upper} \vert \over \vert \mathcal{O} \vert$                                                                     | 0.0     |
