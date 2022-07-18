@@ -1,21 +1,15 @@
-from pathlib import Path
-
 from hn_eda.story_corpus import StoryCorpusReader
 from matplotlib import pyplot as plt
 from nltk.book import Text
 from nltk.corpus import stopwords
 
-ROOT = Path(__file__).parent
-GENERATED_DIR = ROOT.parent / "generated"
-
 
 def main():
     story_corpus = StoryCorpusReader()
 
-    story_text = Text(story_corpus.sentences_tokens())
+    story_text = Text(story_corpus.words())
 
     story_text[3:5]
-    story_text[3:7]
     story_text.tokens[3:5]
 
     plt.figure(figsize=(18, 12))
@@ -52,7 +46,7 @@ def main():
 
     story_vocab = story_text.vocab()
 
-    story_vocab.most_common(20)
+    story_vocab.most_common(10)
 
     stop_words = set(stopwords.words("english"))
 
