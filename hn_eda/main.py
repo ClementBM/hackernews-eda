@@ -12,11 +12,11 @@ GENERATED_DIR = ROOT.parent / "generated"
 
 
 def main():
-    topstories = load_topstories_from_zip()
-    topstories.describe()
+    # topstories = load_topstories_from_zip()
+    # topstories.describe()
 
     story_corpus = StoryCorpusReader()
-    corpus_metric = CorpusMetrics(corpus=story_corpus)
+    corpus_metric = CorpusMetrics(corpus=story_corpus, item_name="title")
 
     metrics_df = corpus_metric.values()
     metrics_df.to_markdown(GENERATED_DIR / "readme.md")
@@ -105,7 +105,7 @@ def plot_word_cloud(corpus_metric: CorpusMetrics, plot_path: Path):
             max_words=150,
             include_numbers=False,
         )
-        .generate_from_frequencies(corpus_metric.frequency_distribution)
+        .generate_from_frequencies(corpus_metric.dictionary())
         .recolor(random_state=1)
     )
 

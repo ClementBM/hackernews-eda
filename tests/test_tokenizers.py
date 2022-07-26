@@ -1,5 +1,6 @@
 from nltk.tokenize.casual import _replace_html_entities
 from hn_eda.tokenizers import StoryTokenizer
+import re
 
 
 def test_replace_html_entities():
@@ -13,3 +14,18 @@ def test_find_all():
     tokenizer = StoryTokenizer()
     words = tokenizer.WORD_RE.findall(text)
     assert words
+
+
+def test_uppercased_title_token():
+    title = "This week in KDE: You wanted stability? Here\u2019s some stability"
+    safe_title = _replace_html_entities(title)
+
+    uppercased_tokens = re.findall(r"[A-Z]{2,}", safe_title)
+    assert uppercased_tokens == ["KDE"]
+
+
+def test_uppercased_title():
+    regex_pattern = r"^[^a-z]*$"
+    uppercase_title = "THIS IS A TEST TITLE 2 !!"
+    is_uppercase = re.match(regex_pattern, uppercase_title) is not None
+    assert is_uppercase == True
