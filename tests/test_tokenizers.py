@@ -10,7 +10,7 @@ def test_replace_html_entities():
 
 
 def test_find_all():
-    text = ""
+    text = "Open-Sourcing our Firmware"
     tokenizer = StoryTokenizer()
     words = tokenizer.WORD_RE.findall(text)
     assert words
